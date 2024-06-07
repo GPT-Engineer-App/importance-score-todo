@@ -1,17 +1,24 @@
 import React, { useState } from "react";
-import { Container, VStack, HStack, Input, Button, Text, Box, Slider, SliderTrack, SliderFilledTrack, SliderThumb, IconButton } from "@chakra-ui/react";
-import { FaTrash } from "react-icons/fa";
+import { Container, VStack, HStack, Input, Button, Text, Box, Slider, SliderTrack, SliderFilledTrack, SliderThumb, IconButton, useDisclosure } from "@chakra-ui/react";
+import { FaTrash, FaEdit } from "react-icons/fa";
 
 const Index = () => {
   const [todos, setTodos] = useState([]);
   const [task, setTask] = useState("");
   const [importance, setImportance] = useState(5);
+  const [editIndex, setEditIndex] = useState(null);
   const [quickness, setQuickness] = useState(5);
 
   const addTodo = () => {
     if (task.trim() === "") return;
     const newTodo = { task, importance, quickness };
-    setTodos([...todos, newTodo]);
+    if (editIndex !== null) {
+      const updatedTodos = todos.map((todo, index) => (index === editIndex ? newTodo : todo));
+      setTodos(updatedTodos);
+      setEditIndex(null);
+    } else {
+      setTodos([...todos, newTodo]);
+    }
     setTask("");
     setImportance(5);
     setQuickness(5);
@@ -20,6 +27,14 @@ const Index = () => {
   const deleteTodo = (index) => {
     const newTodos = todos.filter((_, i) => i !== index);
     setTodos(newTodos);
+  };
+
+  const editTodo = (index) => {
+    const todo = todos[index];
+    setTask(todo.task);
+    setImportance(todo.importance);
+    setQuickness(todo.quickness);
+    setEditIndex(index);
   };
 
   const sortedTodos = todos.sort((a, b) => b.importance + b.quickness - (a.importance + a.quickness));
@@ -63,7 +78,10 @@ const Index = () => {
                   Importance: {todo.importance}, Quickness: {todo.quickness}
                 </Text>
               </Box>
-              <IconButton aria-label="Delete" icon={<FaTrash />} onClick={() => deleteTodo(index)} />
+              <HStack>
+                <IconButton aria-label="Edit" icon={<FaEdit />} onClick={() => editTodo(index)} />
+                <IconButton aria-label="Delete" icon={<FaTrash />} onClick={() => deleteTodo(index)} />
+              </HStack>
             </HStack>
           ))}
         </VStack>
